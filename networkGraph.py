@@ -11,8 +11,7 @@ def parseXML(fileName):
 	root = tree.getroot()
 
 	#variables for data 
-	data = {}
-	tmpPortData = []
+	tmpPort = []
 	hostIP = ''
 
 	for host in root: #reads each host 
@@ -61,11 +60,11 @@ def parseXML(fileName):
 
 	return data
 
-hosts = {"192.168.1.1": "TestData",
+hosts = parseXML('/home/user/Desktop/Project/test2Scan.xml')
+'''{"192.168.1.1": "TestData",
 			 "192.168.1.2": "TestData",
 			 "192.168.1.3": "TestData",
-			 "192.168.1.4": "TestData"}
-#parseXML('/home/user/Desktop/Project/test2Scan.xml')
+			 "192.168.1.4": "TestData"}'''
 
 hostConnections = [["192.168.1.1", "192.168.1.2"], ["192.168.1.9", "192.168.1.18"]]
 

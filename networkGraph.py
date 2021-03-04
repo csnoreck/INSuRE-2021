@@ -24,7 +24,7 @@ def parseXML(fileName):
 					hostIP = hostData.attrib['addr'] #
 				#</address>
 
-				if host.tag == 'status':
+				if .tag == 'status':
 					state = hostData.attrib['state']
 				#</status>
 

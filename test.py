@@ -1,3 +1,3 @@
 print("Hello Friend")
-print("This is unchanged")
-print("And there is nothing you can do about it HAHAHA")
+print("This is COMPLETELY changed")
+print("And there is EVERYTHING you can do about it HAHAHA")

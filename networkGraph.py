@@ -61,11 +61,11 @@ def parseXML(fileName):
 
 	return data
 
-hosts = parseXML('/home/user/Desktop/Project/test2Scan.xml')
-'''{"192.168.1.1": "TestData",
+hosts = {"192.168.1.1": "TestData",
 			 "192.168.1.2": "TestData",
 			 "192.168.1.3": "TestData",
-			 "192.168.1.4": "TestData"}'''
+			 "192.168.1.4": "TestData"}
+#parseXML('/home/user/Desktop/Project/test2Scan.xml')
 
 hostConnections = [["192.168.1.1", "192.168.1.2"], ["192.168.1.9", "192.168.1.18"]]
 

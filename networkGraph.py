@@ -16,7 +16,7 @@ def parseXML(fileName):
 
 	for host in root: #reads each host 
 
-		if host.tag == 'host':
+		if tag == 'host':
 
 			for hostData in host: #reads tags under host tag
 

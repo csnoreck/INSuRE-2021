@@ -121,16 +121,22 @@ def parseXML(filePath):
 
 	return data
 
-def compileData(s1, s2):
+def compileData(s1, s2, s3):
 	data = {'hosts': [], 'scantime': []}
 
-	for host1 in s1:
-		data['hosts'] += [host1]
+	for host in s3:
+		data['hosts'] += [host]
+		data['scantime'] += [3]
+
+	for host in s1:
+		data['hosts'] += [host]
 		data['scantime'] += [1]
 
-	for host2 in s2:
-			data['hosts'] += [host2]
-			data['scantime'] += [2]
+	for host in s2:
+		data['hosts'] += [host]
+		data['scantime'] += [2]
+
+	
 
 	return data
 
@@ -141,10 +147,12 @@ app.title = "Network Visualization"
 #-------------------------------------------------------------------
 scanData1 = parseXML_mod('test2Scan.xml')
 scanData2 = parseXML_mod('testScan.xml')
+scanData3 = parseXML_mod('test3Scan.xml')
 
-df = compileData(scanData1, scanData2)
+df = compileData(scanData1, scanData2, scanData3)
 #-------------------------------------------------------------------
 fig = px.scatter(df, x="scantime", y="hosts")
+fig.update_yaxes(categoryorder='category ascending')
 
 app.layout = html.Div(children=[
     html.H1(children='Network Visualization Prototype'),

@@ -5,10 +5,6 @@ import dash_html_components as html
 import plotly.express as px
 from dash.dependencies import Input, Output
 
-#local imports
-import compileGraphData as cGD
-import parseXML as pXML
-
 #in order to connect to the web app. go to 127.0.0.1:8050
 
 #these functions are a mess right now, there are a lot of things that are not necessary

@@ -1,10 +1,10 @@
 #library imports
+import json
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.express as px
-import os
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output
 
 #in order to connect to the web app. go to 127.0.0.1:8050
 
@@ -137,14 +137,6 @@ def mergeDicts(d1, d2=None, d3=None, d4=None, d5=None, d6=None, d7=None, d8=None
 	return fullDictionary
 
 
-def displayPortInfo(portList):
-	output = ''
-
-	for port in portList:
-		output += (str(port) + os.linesep)
-	#print(output)
-	return output
-
 app = dash.Dash(__name__)
 app.title = "Network Visualization"
 
@@ -156,11 +148,11 @@ scanData3 = parseXML('test3Scan.xml')
 #create a new full dictionary that conatins info from all the scans. 
 portInfo = mergeDicts(scanData1[1], scanData2[1], scanData3[1])
 
-#compile the different scans into 1 dataframe (df) to be used by ploy.ly express (px)
+#complie the different scans into 1 dataframe (df) to be used by ploy.ly express (px)
 df = compileGraphData(scanData1[0], scanData2[0], scanData3[0])
 #-------------------------------------------------------------------
 fig = px.scatter(df, x="scantime", y="hosts")
-fig.update_yaxes(categoryorder='category ascending') # order hosts
+fig.update_yaxes(categoryorder='category ascending')
 
 app.layout = html.Div(children=[
     html.H1(children='Network Visualization Prototype'),
@@ -174,6 +166,10 @@ app.layout = html.Div(children=[
         figure=fig
     ),
 
+    html.Div([
+    	html.Pre(id='click-data'),
+    	], className='testGraph'),
+    	
     html.Div(children='''
         Enter a host to view its open ports
     '''),
@@ -185,30 +181,34 @@ app.layout = html.Div(children=[
     	id='host_input'
     	),
 
-    html.Button(id='search-button-state', n_clicks=0, children='Search'),
-
-    html.Table(id='port_data')
+    html.Div(id='port_data')
+    
 ])
 
-'''
-app.callback provides the functionality to the host search, it must be followed
- 	by the callback function declaration (in this case update_output_div).
-	offical documentation can be found here: https://dash.plotly.com/basic-callbacks
- 		'''
 @app.callback(
     Output(component_id='port_data', component_property='children'),
-    Input('search-button-state', 'n_clicks'),
-    State('host_input', 'value')       
+    Input(component_id='host_input', component_property='value')
 )
 
-# define what to do when the callback is activated 
-def update_output_div(n_clicks, input_value):
+def update_output_div(input_value):
 	if input_value in portInfo:
-		#return 'Ports: '  + str(portInfo[input_value])
-		return displayPortInfo(portInfo[input_value])
+		return 'Ports: '  + str(portInfo[input_value])
 	else:
 		return 'Not a valid host'
+		
+@app.callback(
+     Output(component_id='host_input', component_property='value'),
+     Input(component_id='main-graph', component_property='clickData')
+)
 
+def display_click_data(clickData):
+	if clickData is not None:
+		json_object = json.loads(json.dumps(clickData, indent=2))
+		inner_json_object = json_object["points"]
+		y_value = inner_json_object[0]
+		y_second_value = y_value["y"]
+		return y_second_value
+	#return json.dumps(clickData, indent=2)
 
 if __name__ == '__main__':
     app.run_server(debug=True)

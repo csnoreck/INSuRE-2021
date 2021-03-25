@@ -3,16 +3,8 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.express as px
-<<<<<<< HEAD
 import os
 from dash.dependencies import Input, Output, State
-=======
-from dash.dependencies import Input, Output
-
-#local imports
-import compileGraphData as cGD
-import parseXML as pXML
->>>>>>> 1c150a97ec8ea40b7e96af664ee8da1f47141ecc
 
 #in order to connect to the web app. go to 127.0.0.1:8050
 
@@ -144,7 +136,6 @@ def mergeDicts(d1, d2=None, d3=None, d4=None, d5=None, d6=None, d7=None, d8=None
 
 	return fullDictionary
 
-<<<<<<< HEAD
 def displayPortInfo(portList):
 	output = ''
 
@@ -152,8 +143,6 @@ def displayPortInfo(portList):
 		output += (str(port) + os.linesep)
 	#print(output)
 	return output
-=======
->>>>>>> 1c150a97ec8ea40b7e96af664ee8da1f47141ecc
 
 app = dash.Dash(__name__)
 app.title = "Network Visualization"
@@ -166,19 +155,11 @@ scanData3 = parseXML('test3Scan.xml')
 #create a new full dictionary that conatins info from all the scans. 
 portInfo = mergeDicts(scanData1[1], scanData2[1], scanData3[1])
 
-<<<<<<< HEAD
 #compile the different scans into 1 dataframe (df) to be used by ploy.ly express (px)
 df = compileGraphData(scanData1[0], scanData2[0], scanData3[0])
 #-------------------------------------------------------------------
 fig = px.scatter(df, x="scantime", y="hosts")
 fig.update_yaxes(categoryorder='category ascending') # order hosts
-=======
-#complie the different scans into 1 dataframe (df) to be used by ploy.ly express (px)
-df = compileGraphData(scanData1[0], scanData2[0], scanData3[0])
-#-------------------------------------------------------------------
-fig = px.scatter(df, x="scantime", y="hosts")
-fig.update_yaxes(categoryorder='category ascending')
->>>>>>> 1c150a97ec8ea40b7e96af664ee8da1f47141ecc
 
 app.layout = html.Div(children=[
     html.H1(children='Network Visualization Prototype'),
@@ -203,7 +184,6 @@ app.layout = html.Div(children=[
     	id='host_input'
     	),
 
-<<<<<<< HEAD
     html.Button(id='search-button-state', n_clicks=0, children='Search'),
 
     html.Table(id='port_data')
@@ -225,26 +205,9 @@ def update_output_div(n_clicks, input_value):
 	if input_value in portInfo:
 		#return 'Ports: '  + str(portInfo[input_value])
 		return displayPortInfo(portInfo[input_value])
-=======
-    html.Div(id='port_data')
-])
-
-@app.callback(
-    Output(component_id='port_data', component_property='children'),
-    Input(component_id='host_input', component_property='value')
-)
-
-def update_output_div(input_value):
-	if input_value in portInfo:
-		return 'Ports: '  + str(portInfo[input_value])
->>>>>>> 1c150a97ec8ea40b7e96af664ee8da1f47141ecc
 	else:
 		return 'Not a valid host'
 
 
 if __name__ == '__main__':
-<<<<<<< HEAD
     app.run_server(debug=True)
-=======
-    app.run_server(debug=True)
->>>>>>> 1c150a97ec8ea40b7e96af664ee8da1f47141ecc

@@ -4,6 +4,9 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import visdcc
 
+#look at Jaal for search functionality
+
+
 app = dash.Dash(__name__)
 
 app.layout = html.Div([

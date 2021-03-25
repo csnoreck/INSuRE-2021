@@ -137,6 +137,7 @@ def mergeDicts(d1, d2=None, d3=None, d4=None, d5=None, d6=None, d7=None, d8=None
 
 	return fullDictionary
 
+
 def displayPortInfo(portList):
 	output = ''
 

@@ -1,4 +1,5 @@
 #library imports
+import json
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -208,6 +209,20 @@ def update_output_div(n_clicks, input_value):
 	else:
 		return 'Not a valid host'
 
+@app.callback(
+     Output(component_id='host_input', component_property='value'),
+     Input(component_id='main-graph', component_property='clickData')
+)
+
+def display_click_data(clickData):
+	if clickData is not None:
+		json_object = json.loads(json.dumps(clickData, indent=2))
+		inner_json_object = json_object["points"]
+		y_value = inner_json_object[0]
+		y_second_value = y_value["y"]
+		test = [y_second_value]
+		return y_second_value
+	#return json.dumps(clickData, indent=2)
 
 if __name__ == '__main__':
     app.run_server(debug=True)

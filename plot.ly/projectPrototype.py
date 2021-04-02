@@ -6,10 +6,12 @@ import dash_html_components as html
 import dash_table
 import plotly.express as px
 import os
+import fnmatch
 import csv
 from dash.dependencies import Input, Output, State
+import pandas as pd
 
-#in order to connect to the web app. go to 127.0.0.1:8050
+#in order to connect to the web app, first run this file, and go to 127.0.0.1:8050
 
 #these functions are a mess right now, there are a lot of things that are not necessary
 #for current functionality
@@ -75,39 +77,47 @@ def parseCSV(filePath):
     return output
 
 def compileGraphData(s1, s2=None, s3=None, s4=None, s5=None, s6=None, s7=None, s8=None):
-    data = {'hosts': [], 'scantime': []}
+    data = {'hosts': [], 'scantime': [], 'filtered': []}
 
     for host in s1:
         data['hosts'] += [host]
         data['scantime'] += [1]
+        data['filtered'] += ['No']
     if s2 != None:
         for host in s2:
             data['hosts'] += [host]
             data['scantime'] += [2]
+            data['filtered'] += ['No']
     if s3 != None:
         for host in s3:
             data['hosts'] += [host]
             data['scantime'] += [3]
+            data['filtered'] += ['No']
     if s4 != None:
         for host in s4:
             data['hosts'] += [host]
             data['scantime'] += [4]
+            data['filtered'] += ['No']
     if s5 != None:
         for host in s5:
             data['hosts'] += [host]
             data['scantime'] += [5]
+            data['filtered'] += ['No']
     if s6 != None:
         for host in s6:
             data['hosts'] += [host]
             data['scantime'] += [6]
+            data['filtered'] += ['No']
     if s7 != None:
         for host in s7:
             data['hosts'] += [host]
             data['scantime'] += [7]
+            data['filtered'] += ['No']
     if s8 != None:
         for host in s8:
             data['hosts'] += [host]
             data['scantime'] += [8]
+            data['filtered'] += ['No']
 
     return data
 
@@ -148,7 +158,6 @@ def mergeDicts(d1, d2=None, d3=None, d4=None, d5=None, d6=None, d7=None, d8=None
 
     return fullDictionary
 
-
 def displayPortInfo(portList):    
     #add ports to table if there are ports
     if portList:
@@ -180,6 +189,35 @@ def displayPortInfo(portList):
     else:
         return 'No Open Ports detected'
 
+def findAndFlag(df, searchterm):
+    indices = [i for i, x in enumerate(df['hosts']) if fnmatch.fnmatch(x, searchterm)] #loops and finds all indices of the searchterm
+    
+    if indices != []:
+        for i in indices:
+            df['filtered'][i] = 'Yes'
+
+        #define color index for graph color coding
+        colorsIdx = {'No': 'rgb(0,0,255)', 'Yes': 'rgb(0,255,0)'}
+        #recreate graph with filter applied
+        fig = px.scatter(df, x="scantime", y="hosts", color = 'filtered', color_discrete_map=colorsIdx)
+        #style graph
+        fig.update_yaxes(categoryorder='category ascending')
+        fig.update_traces(marker=dict(line=dict(width=1.1, color='DarkSlateGrey')), selector=dict(mode='markers'))
+
+        #flip filter flags back to 'No' for filter integrity (since df was already used the graph will still update correctly)
+        for i in indices:
+            df['filtered'][i] = 'No'
+
+        return fig
+    else:
+        #create graph and style it
+        colorsIdx = {'No': 'rgb(0,0,255)', 'Yes': 'rgb(0,255,0)'}
+        fig = px.scatter(df, x="scantime", y="hosts", color = 'filtered', color_discrete_map=colorsIdx)
+        fig.update_yaxes(categoryorder='category ascending')
+
+        fig.update_traces(marker=dict(line=dict(width=1.1, color='DarkSlateGrey')), selector=dict(mode='markers'))
+        return fig
+
 app = dash.Dash(__name__)
 app.title = "Network Visualization"
 
@@ -194,8 +232,13 @@ portInfo = mergeDicts(scanData1[1], scanData2[1], scanData3[1])
 #compile the different scans into 1 dataframe (df) to be used by ploy.ly express (px)
 df = compileGraphData(scanData1[0], scanData2[0], scanData3[0])
 #-------------------------------------------------------------------
-fig = px.scatter(df, x="scantime", y="hosts")
+#define color index for graph color coding
+colorsIdx = {'No': 'rgb(0,0,255)', 'Yes': 'rgb(0,255,0)'}
+
+#create graph and style it
+fig = px.scatter(df, x="scantime", y="hosts", color = 'filtered', color_discrete_map=colorsIdx)
 fig.update_yaxes(categoryorder='category ascending') # order hosts
+fig.update_traces(marker=dict(line=dict(width=1.1, color='DarkSlateGrey')), selector=dict(mode='markers'))
 #fig.update_layout(clickmode='event+select') #enables click selection on graph, not really sure how to apply this to filter
 
 app.layout = html.Div(children=[
@@ -212,7 +255,7 @@ app.layout = html.Div(children=[
         id='host_filter_input'
         ),
 
-    html.Button(id='host_search_button_state', n_clicks=0, children='Search'),
+    html.Button(id='host_search_button_state', n_clicks=0, children='Filter'),
 
     dcc.Graph(
         id='main-graph',
@@ -229,6 +272,7 @@ app.layout = html.Div(children=[
         value='',
         id='port_host_input'
         ),
+
 
     html.Button(id='port_search_button_state', n_clicks=0, children='Search'),
 
@@ -275,18 +319,25 @@ def display_click_data(clickData):
         return y_second_value
     #return json.dumps(clickData, indent=2)
 
-'''@app.callback(
+@app.callback(
     Output(component_id='main-graph', component_property='figure'), 
     Input('host_search_button_state', 'n_clicks'),
+    #Input('main-graph', 'figure'),
     State('host_filter_input', 'value')       
 )
 
 # define what to do when the callback is activated 
 def update_graph(n_clicks, input_value):
-    if input_value in df:
-        return fig.update()
+    #checks if input on app is in the dataframe of the graph, if yes, then apply filter, else load original
+    if input_value != '':
+        #add wildcards to value to 
+        input_value = input_value + '*'
+        #may want this block to check here, but i belive that it is effciently checked in findAndFlag
+        '''for host in df['hosts']:
+            if fnmatch.fnmatch(host, input_value):'''
+        return findAndFlag(df, input_value)
     else:
-        return 'Not a valid host'''
+        return fig
 
 if __name__ == '__main__':
     app.run_server(debug=True)

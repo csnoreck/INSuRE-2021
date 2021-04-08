@@ -376,7 +376,7 @@ def update_graph(n_clicks, input_value):
 #Upload page
 #-----------------------------------------------------------------------------------------------------------
 upload_page = html.Div(children=[
-    html.H2(children='FUCK')
+    html.H2(children='Placeholder Upload Page')
     
 ])
 

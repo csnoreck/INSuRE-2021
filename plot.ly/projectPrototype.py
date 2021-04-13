@@ -17,13 +17,17 @@ import pandas as pd
 #for current functionality
 import xml.etree.ElementTree as ET
 
+#funcitons
+#-----------------------------------------------------------------------------------------------------------
 def parseXML(filePath):
     tree = ET.parse(filePath)
     root = tree.getroot()
 
     #variables for data 
     data = {}
-    tmpPortData = []
+    tmpPortProtocol = []
+    tmpPortNum = []
+    tmpPortStatus = []
     hostList = []
     hostIP = ''
 
@@ -32,7 +36,6 @@ def parseXML(filePath):
         if host.tag == 'host':
 
             for hostData in host: #reads tags under host tag
-
                 if hostData.tag == 'address':
                     #print(hostData.attrib['addr'], "Address Type:", hostData.attrib['addrtype'])
                     hostIP = hostData.attrib['addr'] 
@@ -46,21 +49,27 @@ def parseXML(filePath):
 
                 if hostData.tag == 'ports':
                     for portData in hostData:#reads tags under ports tag
-
                         if portData.tag == 'port':
                             #print('    Port:', portData.attrib['portid'])  
                             portNum = portData.attrib['portid']
+                            portProtocol = portData.attrib['protocol']
 
-                            tmpPortData += [portNum]
+                            tmpPortNum += [portNum]
+                            tmpPortProtocol += [portProtocol]
+                            
+                            for portInfo in portData:
+                                if portInfo.tag == 'state':
+                                    portStatus = portInfo.attrib['state']
+
+                                    tmpPortStatus += [portStatus]
                         #</port>
                 #</ports>
 
-            if tmpPortData is not None:
-                '''if len(tmpPortData) != 1000:
-                    for x in range(1000 - len(tmpPortData)):
-                        tmpPortData += [0]'''
-                data[hostIP] = tmpPortData
-                tmpPortData = []
+            if tmpPortNum is not None:
+                data[hostIP] = [tmpPortProtocol, tmpPortNum, tmpPortStatus]
+                tmpPortNum = []
+                tmpPortStatus = []
+                tmpPortProtocol = []
             #else: 
                 #data[hostIP] = ''
             
@@ -73,7 +82,7 @@ def parseCSV(filePath):
     output = {}
     for line in file:
         tmp = line.rstrip().replace('"', '').split(',')
-        output[tmp[0]] = tmp[1] #creates entry in python dict for each port/service // tmp[0] = PortNumber & tmp[1] = ServiceName
+        output[tmp[0].upper()+tmp[1]] = tmp[2] #creates entry in python dict for each port/service // tmp[0] = Protocol | tmp[1] = PortNumber | tmp[2] = ServiceName
     return output
 
 def compileGraphData(s1, s2=None, s3=None, s4=None, s5=None, s6=None, s7=None, s8=None):
@@ -158,32 +167,46 @@ def mergeDicts(d1, d2=None, d3=None, d4=None, d5=None, d6=None, d7=None, d8=None
 
     return fullDictionary
 
-def displayPortInfo(portList):    
+def displayPortInfo(portInfo):    
     #add ports to table if there are ports
-    if portList:
+
+    if portInfo:
+        portProtocolList = portInfo[0]
+        portNumList = portInfo[1]
+        portState = portInfo[2]
+
 
         #parse portDictionary csv file
         portDictionary = parseCSV('portDictionaryLarge.csv')
-
         #define initial table header
         portTable = [
         html.Tr(),
         html.Th(children='Port Number'),
+        html.Th(children='Protocol'),
         html.Th(children='Service'),
+        html.Th(children='State'),
         html.Tr()
         ]
 
         #add ports to table, creating a new row for each port
-        for port in portList:
+        for x in range(len(portProtocolList)):
+            dicKey = portProtocolList[x].upper()+portNumList[x]
+            print(dicKey)
+            print(type(dicKey))
             #if port is know to dictonary, display service name
-            if port in portDictionary:
+            if dicKey in portDictionary:
+                print('inif')
                 portTable += [html.Tr(),
-                              html.Td(children=str(port)), 
-                              html.Td(children=str(portDictionary[port]))]
+                              html.Td(children=str(portNumList[x])), 
+                              html.Td(children=str(portProtocolList[x])), 
+                              html.Td(children=str(portDictionary[dicKey])),
+                              html.Td(children=str(portState[x]))]
             else:
                 portTable += [html.Tr(),
-                              html.Td(children=str(port)), 
-                              html.Td(children='Unknown Service')]
+                              html.Td(children=str(portNumList[x])), 
+                              html.Td(children=str(portProtocolList[x])), 
+                              html.Td(children='Unknown Service'),
+                              html.Td(children=str(portState[x]))]
             
         return portTable
     else:
@@ -221,7 +244,7 @@ def findAndFlag(df, searchterm):
 app = dash.Dash(__name__)
 app.title = "Network Visualization"
 
-#-------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------
 scanData1 = parseXML('testScan.xml')
 scanData2 = parseXML('test2Scan.xml')
 scanData3 = parseXML('test3Scan.xml')
@@ -231,7 +254,7 @@ portInfo = mergeDicts(scanData1[1], scanData2[1], scanData3[1])
 
 #compile the different scans into 1 dataframe (df) to be used by ploy.ly express (px)
 df = compileGraphData(scanData1[0], scanData2[0], scanData3[0])
-#-------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------
 #define color index for graph color coding
 colorsIdx = {'No': 'rgb(0,0,255)', 'Yes': 'rgb(0,255,0)'}
 
@@ -239,9 +262,24 @@ colorsIdx = {'No': 'rgb(0,0,255)', 'Yes': 'rgb(0,255,0)'}
 fig = px.scatter(df, x="scantime", y="hosts", color = 'filtered', color_discrete_map=colorsIdx)
 fig.update_yaxes(categoryorder='category ascending') # order hosts
 fig.update_traces(marker=dict(line=dict(width=1.1, color='DarkSlateGrey')), selector=dict(mode='markers'))
-#fig.update_layout(clickmode='event+select') #enables click selection on graph, not really sure how to apply this to filter
 
-app.layout = html.Div(children=[
+#screens
+#-----------------------------------------------------------------------------------------------------------
+app.layout = html.Div([
+    dcc.Location(id='url', refresh=False),
+    html.Div(id='page-content')
+])
+
+#-----------------------------------------------------------------------------------------------------------
+index_page = html.Div([
+    dcc.Link('Go to Upload', href='/Upload_Page'),
+    html.Br(),
+    dcc.Link('Go to Graph', href='/Graph_Page'),
+])
+
+#primary app screen, includes graph and port widget
+#-----------------------------------------------------------------------------------------------------------
+graph_page = html.Div(children=[
     html.H1(children='Network Visualization Prototype'),
 
     html.Div(children='''
@@ -285,11 +323,7 @@ app.layout = html.Div(children=[
     )
 ])
 
-'''
-app.callback provides the functionality to the host search, it must be followed
-    by the callback function declaration (in this case update_output_div).
-    offical documentation can be found here: https://dash.plotly.com/basic-callbacks
-        '''
+#callbacks for screen functionality
 @app.callback(
     Output(component_id='port_data', component_property='children'),
     Input('port_search_button_state', 'n_clicks'),
@@ -326,7 +360,7 @@ def display_click_data(clickData):
     State('host_filter_input', 'value')       
 )
 
-# define what to do when the callback is activated 
+#click functionality
 def update_graph(n_clicks, input_value):
     #checks if input on app is in the dataframe of the graph, if yes, then apply filter, else load original
     if input_value != '':
@@ -338,6 +372,32 @@ def update_graph(n_clicks, input_value):
         return findAndFlag(df, input_value)
     else:
         return fig
+
+#Upload page
+#-----------------------------------------------------------------------------------------------------------
+upload_page = html.Div(children=[
+    html.H2(children='Placeholder Upload Page')
+    
+])
+
+#-------------------------------------------------------------------------------------------------------------    
+# Update the index
+@app.callback(dash.dependencies.Output('page-content', 'children'),
+              [dash.dependencies.Input('url', 'pathname')])
+def display_page(pathname):
+    if pathname == '/Graph_Page':
+        return graph_page
+    elif pathname == '/Upload_Page':
+        return upload_page
+    else:
+        return index_page
+    # You could also return a 404 "URL not found" page here
+'''
+app.callback provides the functionality to the host search, it must be followed
+    by the callback function declaration (in this case update_output_div).
+    offical documentation can be found here: https://dash.plotly.com/basic-callbacks
+        '''
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)

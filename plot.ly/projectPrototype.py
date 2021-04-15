@@ -28,7 +28,7 @@ def parseXML(filePath):
     tmpPortProtocol = []
     tmpPortNum = []
     tmpPortStatus = []
-    hostList = []
+    hostList = [0]
     hostIP = ''
 
     for host in root: #reads each host 
@@ -72,7 +72,12 @@ def parseXML(filePath):
                 tmpPortProtocol = []
             #else: 
                 #data[hostIP] = ''
-            
+        elif host.tag == 'runstats':
+            for child in host:
+                if child.tag == 'finished':
+                    hostList[0] = child.attrib['timestr']
+                #print(child)
+
     #</host>
     return hostList, data
 
@@ -88,41 +93,58 @@ def parseCSV(filePath):
 def compileGraphData(s1, s2=None, s3=None, s4=None, s5=None, s6=None, s7=None, s8=None):
     data = {'hosts': [], 'scantime': [], 'filtered': []}
 
-    for host in s1:
-        data['hosts'] += [host]
-        data['scantime'] += [1]
-        data['filtered'] += ['No']
+    if s1 != None:
+        scantime = s1[0]
+        s1.remove(s1[0])
+        for host in s1:
+            data['hosts'] += [host]
+            data['scantime'] += [scantime]
+            data['filtered'] += ['No']
     if s2 != None:
+        scantime = s2[0]
+        s2.remove(s2[0])
         for host in s2:
             data['hosts'] += [host]
-            data['scantime'] += [2]
+            data['scantime'] += [scantime]
             data['filtered'] += ['No']
     if s3 != None:
+        scantime = s3[0]
+        s3.remove(s3[0])
         for host in s3:
             data['hosts'] += [host]
-            data['scantime'] += [3]
+            data['scantime'] += [scantime]
             data['filtered'] += ['No']
     if s4 != None:
+        scantime = s4[0]
+        s4.remove(s4[0])
         for host in s4:
             data['hosts'] += [host]
             data['scantime'] += [4]
             data['filtered'] += ['No']
     if s5 != None:
+        scantime = s5[0]
+        s5.remove(s5[0])
         for host in s5:
             data['hosts'] += [host]
             data['scantime'] += [5]
             data['filtered'] += ['No']
     if s6 != None:
+        scantime = s6[0]
+        s6.remove(s6[0])
         for host in s6:
             data['hosts'] += [host]
             data['scantime'] += [6]
             data['filtered'] += ['No']
     if s7 != None:
+        scantime = s7[0]
+        s7.remove(s7[0])
         for host in s7:
             data['hosts'] += [host]
             data['scantime'] += [7]
             data['filtered'] += ['No']
     if s8 != None:
+        scantime = s8[0]
+        s8.remove(s8[0])
         for host in s8:
             data['hosts'] += [host]
             data['scantime'] += [8]
@@ -167,7 +189,7 @@ def mergeDicts(d1, d2=None, d3=None, d4=None, d5=None, d6=None, d7=None, d8=None
 
     return fullDictionary
 
-def displayPortInfo(portInfo):    
+def displayPortInfo(portInfo):
     #add ports to table if there are ports
 
     if portInfo:
@@ -226,6 +248,7 @@ def findAndFlag(df, searchterm):
         #style graph
         fig.update_yaxes(categoryorder='category ascending')
         fig.update_traces(marker=dict(line=dict(width=1.1, color='DarkSlateGrey')), selector=dict(mode='markers'))
+        fig.update_xaxes(dtick = 1)
 
         #flip filter flags back to 'No' for filter integrity (since df was already used the graph will still update correctly)
         for i in indices:
@@ -237,8 +260,8 @@ def findAndFlag(df, searchterm):
         colorsIdx = {'No': 'rgb(0,0,255)', 'Yes': 'rgb(0,255,0)'}
         fig = px.scatter(df, x="scantime", y="hosts", color = 'filtered', color_discrete_map=colorsIdx)
         fig.update_yaxes(categoryorder='category ascending')
-
         fig.update_traces(marker=dict(line=dict(width=1.1, color='DarkSlateGrey')), selector=dict(mode='markers'))
+        fig.update_xaxes(dtick = 1)
         return fig
 
 app = dash.Dash(__name__)
@@ -262,6 +285,7 @@ colorsIdx = {'No': 'rgb(0,0,255)', 'Yes': 'rgb(0,255,0)'}
 fig = px.scatter(df, x="scantime", y="hosts", color = 'filtered', color_discrete_map=colorsIdx)
 fig.update_yaxes(categoryorder='category ascending') # order hosts
 fig.update_traces(marker=dict(line=dict(width=1.1, color='DarkSlateGrey')), selector=dict(mode='markers'))
+fig.update_xaxes(dtick = 1);
 
 #screens
 #-----------------------------------------------------------------------------------------------------------

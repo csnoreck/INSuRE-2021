@@ -119,35 +119,35 @@ def compileGraphData(s1, s2=None, s3=None, s4=None, s5=None, s6=None, s7=None, s
         s4.remove(s4[0])
         for host in s4:
             data['hosts'] += [host]
-            data['scantime'] += [4]
+            data['scantime'] += [scantime]
             data['filtered'] += ['No']
     if s5 != None:
         scantime = s5[0]
         s5.remove(s5[0])
         for host in s5:
             data['hosts'] += [host]
-            data['scantime'] += [5]
+            data['scantime'] += [scantime]
             data['filtered'] += ['No']
     if s6 != None:
         scantime = s6[0]
         s6.remove(s6[0])
         for host in s6:
             data['hosts'] += [host]
-            data['scantime'] += [6]
+            data['scantime'] += [scantime]
             data['filtered'] += ['No']
     if s7 != None:
         scantime = s7[0]
         s7.remove(s7[0])
         for host in s7:
             data['hosts'] += [host]
-            data['scantime'] += [7]
+            data['scantime'] += [scantime]
             data['filtered'] += ['No']
     if s8 != None:
         scantime = s8[0]
         s8.remove(s8[0])
         for host in s8:
             data['hosts'] += [host]
-            data['scantime'] += [8]
+            data['scantime'] += [scantime]
             data['filtered'] += ['No']
 
     return data
@@ -272,12 +272,13 @@ app.title = "Network Visualization"
 scanData1 = parseXML('testScan.xml')
 scanData2 = parseXML('test2Scan.xml')
 scanData3 = parseXML('test3Scan.xml')
+scanData4 = parseXML('test1000scan')
 
 #create a new full dictionary that conatins info from all the scans. 
-portInfo = mergeDicts(scanData1, scanData2, scanData3)
+portInfo = mergeDicts(scanData1, scanData2, scanData3, scanData4)
 
 #compile the different scans into 1 dataframe (df) to be used by ploy.ly express (px)
-df = compileGraphData(scanData1[0], scanData2[0], scanData3[0])
+df = compileGraphData(scanData1[0], scanData2[0], scanData3[0], scanData4[0])
 #-----------------------------------------------------------------------------------------------------------
 #define color index for graph color coding
 colorsIdx = {'No': 'rgb(0,0,255)', 'Yes': 'rgb(0,255,0)'}

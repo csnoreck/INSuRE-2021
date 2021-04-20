@@ -360,6 +360,6 @@
 </ports>
 <times srtt="287" rttvar="145" to="100000"/>
 </host>
-<runstats><finished time="1613751628" timestr="Fri Feb 19 11:20:28 2021" elapsed="48.47" summary="Nmap done at Fri Feb 19 11:20:28 2021; 256 IP addresses (18 hosts up) scanned in 48.47 seconds" exit="success"/><hosts up="18" down="238" total="256"/>
+<runstats><finished time="1613751628" timestr="Fri Feb 20 11:20:28 2021" elapsed="48.47" summary="Nmap done at Fri Feb 19 11:20:28 2021; 256 IP addresses (18 hosts up) scanned in 48.47 seconds" exit="success"/><hosts up="18" down="238" total="256"/>
 </runstats>
 </nmaprun>

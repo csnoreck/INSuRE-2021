@@ -28,7 +28,7 @@ def parseXML(filePath):
     tmpPortProtocol = []
     tmpPortNum = []
     tmpPortStatus = []
-    hostList = []
+    hostList = [0]
     hostIP = ''
 
     for host in root: #reads each host 
@@ -72,7 +72,12 @@ def parseXML(filePath):
                 tmpPortProtocol = []
             #else: 
                 #data[hostIP] = ''
-            
+        elif host.tag == 'runstats':
+            for child in host:
+                if child.tag == 'finished':
+                    hostList[0] = child.attrib['timestr']
+                #print(child)
+
     #</host>
     return hostList, data
 
@@ -88,41 +93,58 @@ def parseCSV(filePath):
 def compileGraphData(s1, s2=None, s3=None, s4=None, s5=None, s6=None, s7=None, s8=None):
     data = {'hosts': [], 'scantime': [], 'filtered': []}
 
-    for host in s1:
-        data['hosts'] += [host]
-        data['scantime'] += [1]
-        data['filtered'] += ['No']
+    if s1 != None:
+        scantime = s1[0]
+        s1.remove(s1[0])
+        for host in s1:
+            data['hosts'] += [host]
+            data['scantime'] += [scantime]
+            data['filtered'] += ['No']
     if s2 != None:
+        scantime = s2[0]
+        s2.remove(s2[0])
         for host in s2:
             data['hosts'] += [host]
-            data['scantime'] += [2]
+            data['scantime'] += [scantime]
             data['filtered'] += ['No']
     if s3 != None:
+        scantime = s3[0]
+        s3.remove(s3[0])
         for host in s3:
             data['hosts'] += [host]
-            data['scantime'] += [3]
+            data['scantime'] += [scantime]
             data['filtered'] += ['No']
     if s4 != None:
+        scantime = s4[0]
+        s4.remove(s4[0])
         for host in s4:
             data['hosts'] += [host]
             data['scantime'] += [4]
             data['filtered'] += ['No']
     if s5 != None:
+        scantime = s5[0]
+        s5.remove(s5[0])
         for host in s5:
             data['hosts'] += [host]
             data['scantime'] += [5]
             data['filtered'] += ['No']
     if s6 != None:
+        scantime = s6[0]
+        s6.remove(s6[0])
         for host in s6:
             data['hosts'] += [host]
             data['scantime'] += [6]
             data['filtered'] += ['No']
     if s7 != None:
+        scantime = s7[0]
+        s7.remove(s7[0])
         for host in s7:
             data['hosts'] += [host]
             data['scantime'] += [7]
             data['filtered'] += ['No']
     if s8 != None:
+        scantime = s8[0]
+        s8.remove(s8[0])
         for host in s8:
             data['hosts'] += [host]
             data['scantime'] += [8]
@@ -130,54 +152,38 @@ def compileGraphData(s1, s2=None, s3=None, s4=None, s5=None, s6=None, s7=None, s
 
     return data
 
-def mergeDicts(d1, d2=None, d3=None, d4=None, d5=None, d6=None, d7=None, d8=None):
+def mergeDicts(s1, s2=None, s3=None, s4=None, s5=None, s6=None, s7=None, s8=None):
+    timeStamp = s1[0][0]#pulls timstamp from scandata, first key is accesses hostdata, second speciefies the actual timestamp from the hostlist
+    fullDictionary = {timeStamp: s1[1]} #creates a 2d dict [time][hostlist]
 
-    fullDictionary = d1
-
-    if d2 != None: # if d2 doesnt exist, then no processing is required
-        for host, portList in d2.items():
-            #check if host in new dictionary is not in the full dict
-            #if not, add it  
-            if host not in fullDictionary:
-                fullDictionary[host] = portList
-    if d3 != None:
-        for host, portList in d3.items(): 
-            if host not in fullDictionary:
-                fullDictionary[host] = portList
-    if d4 != None:
-        for host, portList in d4.items(): 
-            if host not in fullDictionary:
-                fullDictionary[host] = portList
-    if d5 != None:
-        for host, portList in d5.items(): 
-            if host not in fullDictionary:
-                fullDictionary[host] = portList
-    if d6 != None:
-        for host, portList in d6.items(): 
-            if host not in fullDictionary:
-                fullDictionary[host] = portList
-    if d7 != None:
-        for host, portList in d7.items(): 
-            if host not in fullDictionary:
-                fullDictionary[host] = portList
-    if d8 != None:
-        for host, portList in d8.items(): 
-            if host not in fullDictionary:
-                fullDictionary[host] = portList
-
+    if s2 != None: # if s2 doesnt exist, then no processing is required
+        timeStamp = s2[0][0]#set timestamp to new scan's timestamp
+        fullDictionary[timeStamp] = s2[1]#assign new scantimes data to 2d dict [time][hostlist]
+    if s3 != None: 
+        timeStamp = s3[0][0]
+        fullDictionary[timeStamp] = s3[1]
+    if s4 != None: 
+        timeStamp = s4[0][0]
+        fullDictionary[timeStamp] = s4[1]
+    if s5 != None: 
+        timeStamp = s5[0][0]
+        fullDictionary[timeStamp] = s5[1]
+    if s6 != None: 
+        timeStamp = s6[0][0]
+        fullDictionary[timeStamp] = s6[1]
+    if s7 != None: 
+        timeStamp = s7[0][0]
+        fullDictionary[timeStamp] = s7[1]
+    if s8 != None: 
+        timeStamp = s8[0][0]
+        fullDictionary[timeStamp] = s8[1]  
+    
     return fullDictionary
 
-def displayPortInfo(portInfo):    
+def displayPortInfo(portInfo, ip):
     #add ports to table if there are ports
+    if portInfo:#checks if there is data for the ports
 
-    if portInfo:
-        portProtocolList = portInfo[0]
-        portNumList = portInfo[1]
-        portState = portInfo[2]
-
-
-        #parse portDictionary csv file
-        portDictionary = parseCSV('portDictionaryLarge.csv')
         #define initial table header
         portTable = [
         html.Tr(),
@@ -185,29 +191,46 @@ def displayPortInfo(portInfo):
         html.Th(children='Protocol'),
         html.Th(children='Service'),
         html.Th(children='State'),
+        html.Th(children='Scan Time'),
         html.Tr()
         ]
+        for timeStamp in portInfo:#loop through 2d array
+            try:#if ip is not in this time, then skip this interation of the for ie skip this timestamp
+                portProtocolList = portInfo[timeStamp][ip][0]
+                portNumList = portInfo[timeStamp][ip][1]
+                portState = portInfo[timeStamp][ip][2]
+            except:
+                continue                
+            #parse portDictionary csv file
+            portDictionary = parseCSV('portDictionaryLarge.csv')
 
-        #add ports to table, creating a new row for each port
-        for x in range(len(portProtocolList)):
-            dicKey = portProtocolList[x].upper()+portNumList[x]
-            print(dicKey)
-            print(type(dicKey))
-            #if port is know to dictonary, display service name
-            if dicKey in portDictionary:
-                print('inif')
-                portTable += [html.Tr(),
-                              html.Td(children=str(portNumList[x])), 
-                              html.Td(children=str(portProtocolList[x])), 
-                              html.Td(children=str(portDictionary[dicKey])),
-                              html.Td(children=str(portState[x]))]
-            else:
-                portTable += [html.Tr(),
-                              html.Td(children=str(portNumList[x])), 
-                              html.Td(children=str(portProtocolList[x])), 
-                              html.Td(children='Unknown Service'),
-                              html.Td(children=str(portState[x]))]
-            
+            #add ports to table, creating a new row for each port
+            for x in range(len(portProtocolList)):
+                dicKey = portProtocolList[x].upper()+portNumList[x]
+                #if port is know to dictonary, display service name
+                if dicKey in portDictionary:
+                    portTable += [html.Tr(),
+                                  html.Td(children=str(portNumList[x])), 
+                                  html.Td(children=str(portProtocolList[x])), 
+                                  html.Td(children=str(portDictionary[dicKey])),
+                                  html.Td(children=str(portState[x])),
+                                  html.Td(children=str(timeStamp))]
+                else:
+                    portTable += [html.Tr(),
+                                  html.Td(children=str(portNumList[x])), 
+                                  html.Td(children=str(portProtocolList[x])), 
+                                  html.Td(children='Unknown Service'),
+                                  html.Td(children=str(portState[x])),
+                                  html.Td(children=str(timeStamp))]
+            #add formating row to make table more readable
+            portTable += [
+                html.Tr(),
+                html.Th(children='----------'),
+                html.Th(children='----------'),
+                html.Th(children='--------------------'),
+                html.Th(children='-----'),
+                html.Th(children='---------------')
+            ]
         return portTable
     else:
         return 'No Open Ports detected'
@@ -226,6 +249,7 @@ def findAndFlag(df, searchterm):
         #style graph
         fig.update_yaxes(categoryorder='category ascending')
         fig.update_traces(marker=dict(line=dict(width=1.1, color='DarkSlateGrey')), selector=dict(mode='markers'))
+        fig.update_xaxes(dtick = 1)
 
         #flip filter flags back to 'No' for filter integrity (since df was already used the graph will still update correctly)
         for i in indices:
@@ -237,8 +261,8 @@ def findAndFlag(df, searchterm):
         colorsIdx = {'No': 'rgb(0,0,255)', 'Yes': 'rgb(0,255,0)'}
         fig = px.scatter(df, x="scantime", y="hosts", color = 'filtered', color_discrete_map=colorsIdx)
         fig.update_yaxes(categoryorder='category ascending')
-
         fig.update_traces(marker=dict(line=dict(width=1.1, color='DarkSlateGrey')), selector=dict(mode='markers'))
+        fig.update_xaxes(dtick = 1)
         return fig
 
 app = dash.Dash(__name__)
@@ -250,7 +274,7 @@ scanData2 = parseXML('test2Scan.xml')
 scanData3 = parseXML('test3Scan.xml')
 
 #create a new full dictionary that conatins info from all the scans. 
-portInfo = mergeDicts(scanData1[1], scanData2[1], scanData3[1])
+portInfo = mergeDicts(scanData1, scanData2, scanData3)
 
 #compile the different scans into 1 dataframe (df) to be used by ploy.ly express (px)
 df = compileGraphData(scanData1[0], scanData2[0], scanData3[0])
@@ -262,6 +286,7 @@ colorsIdx = {'No': 'rgb(0,0,255)', 'Yes': 'rgb(0,255,0)'}
 fig = px.scatter(df, x="scantime", y="hosts", color = 'filtered', color_discrete_map=colorsIdx)
 fig.update_yaxes(categoryorder='category ascending') # order hosts
 fig.update_traces(marker=dict(line=dict(width=1.1, color='DarkSlateGrey')), selector=dict(mode='markers'))
+fig.update_xaxes(dtick = 1);
 
 #screens
 #-----------------------------------------------------------------------------------------------------------
@@ -332,9 +357,10 @@ graph_page = html.Div(children=[
 
 # define what to do when the callback is activated 
 def update_port_data(n_clicks, input_value):
-    if input_value in portInfo:
+    if input_value in df['hosts']:
         #return 'Ports: '  + str(portInfo[input_value])
-        return displayPortInfo(portInfo[input_value])
+        #print('Big info' + portInfo)
+        return displayPortInfo(portInfo, input_value) 
     else:
         return 'Not a valid host'
 

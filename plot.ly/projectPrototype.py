@@ -17,6 +17,10 @@ import pandas as pd
 #for current functionality
 import xml.etree.ElementTree as ET
 
+#global config/style varaibles
+#define color index for graph color coding
+colorsIdx = {'up': 'rgb(0,0,255)', 'down': 'rgb(255,0,0)', 'flagged': 'rgb(0,255,0)'}
+
 #funcitons
 #-----------------------------------------------------------------------------------------------------------
 def parseXML(filePath):
@@ -30,6 +34,7 @@ def parseXML(filePath):
     tmpPortStatus = []
     hostList = [0]
     hostIP = ''
+    hostStateList = []
 
     for host in root: #reads each host 
 
@@ -45,6 +50,7 @@ def parseXML(filePath):
                 if hostData.tag == 'status':
                     #print('Status:', hostData.attrib['state'])
                     state = hostData.attrib['state']
+                    hostStateList += [state]
                 #</status>
 
                 if hostData.tag == 'ports':
@@ -79,7 +85,7 @@ def parseXML(filePath):
                 #print(child)
 
     #</host>
-    return hostList, data
+    return hostList, data, hostStateList
 
 #returns a dict read of a csv, which should be formatted as follows "PortNumber,ServiceName"
 def parseCSV(filePath):
@@ -90,65 +96,69 @@ def parseCSV(filePath):
         output[tmp[0].upper()+tmp[1]] = tmp[2] #creates entry in python dict for each port/service // tmp[0] = Protocol | tmp[1] = PortNumber | tmp[2] = ServiceName
     return output
 
+'''
+returns a dataframe(df) to be used by plotly, function parameters must be a tuple as defined 
+by the following example (hostlist, statelist). lists in the tuple must be parallel for the 
+current verison of the function to work'''
 def compileGraphData(s1, s2=None, s3=None, s4=None, s5=None, s6=None, s7=None, s8=None):
-    data = {'hosts': [], 'scantime': [], 'filtered': []}
+    data = {'hosts': [], 'scantime': [], 'state': []}
 
     if s1 != None:
-        scantime = s1[0]
-        s1.remove(s1[0])
-        for host in s1:
+        scantime = s1[0][0]
+        s1[0].remove(s1[0][0])
+        for host, state in zip(s1[0], s1[1]):
             data['hosts'] += [host]
             data['scantime'] += [scantime]
-            data['filtered'] += ['No']
+            data['state'] += [state]
     if s2 != None:
-        scantime = s2[0]
-        s2.remove(s2[0])
-        for host in s2:
+        scantime = s2[0][0]
+        s2[0].remove(s2[0][0])
+        for host, state in zip(s2[0], s2[1]):
             data['hosts'] += [host]
             data['scantime'] += [scantime]
-            data['filtered'] += ['No']
+            data['state'] += [state]
     if s3 != None:
-        scantime = s3[0]
-        s3.remove(s3[0])
-        for host in s3:
+        scantime = s3[0][0]
+        s3[0].remove(s3[0][0])
+        for host, state in zip(s3[0], s3[1]):
             data['hosts'] += [host]
             data['scantime'] += [scantime]
-            data['filtered'] += ['No']
+            data['state'] += [state]
     if s4 != None:
-        scantime = s4[0]
-        s4.remove(s4[0])
-        for host in s4:
+        scantime = s4[0][0]
+        s4[0].remove(s4[0][0])
+        for host, state in zip(s4[0], s4[1]):
             data['hosts'] += [host]
             data['scantime'] += [scantime]
-            data['filtered'] += ['No']
+            data['state'] += [state]
     if s5 != None:
-        scantime = s5[0]
-        s5.remove(s5[0])
-        for host in s5:
+        scantime = s5[0][0]
+        s5[0].remove(s5[0][0])
+        for host, state in zip(s5[0], s5[1]):
             data['hosts'] += [host]
             data['scantime'] += [scantime]
-            data['filtered'] += ['No']
+            data['state'] += [state]
     if s6 != None:
-        scantime = s6[0]
-        s6.remove(s6[0])
-        for host in s6:
+        scantime = s6[0][0]
+        s6[0].remove(s6[0][0])
+        for host, state in zip(s6[0], s6[1]):
             data['hosts'] += [host]
             data['scantime'] += [scantime]
-            data['filtered'] += ['No']
+            data['state'] += [state]
     if s7 != None:
-        scantime = s7[0]
-        s7.remove(s7[0])
-        for host in s7:
+        scantime = s7[0][0]
+        s7[0].remove(s7[0][0])
+        for host, state in zip(s7[0], s7[1]):
             data['hosts'] += [host]
             data['scantime'] += [scantime]
-            data['filtered'] += ['No']
+            data['state'] += [state]
     if s8 != None:
-        scantime = s8[0]
-        s8.remove(s8[0])
-        for host in s8:
+        scantime = s8[0][0]
+        s8[0].remove(s8[0][0])
+        for host, state in zip(s8[0], s8[1]):
             data['hosts'] += [host]
             data['scantime'] += [scantime]
-            data['filtered'] += ['No']
+            data['state'] += [state]
 
     return data
 
@@ -239,27 +249,25 @@ def findAndFlag(df, searchterm):
     indices = [i for i, x in enumerate(df['hosts']) if fnmatch.fnmatch(x, searchterm)] #loops and finds all indices of the searchterm
     
     if indices != []:
+        BAK = []
         for i in indices:
-            df['filtered'][i] = 'Yes'
+            BAK += [df['state'][i]]
+            df['state'][i] = 'flagged'
 
-        #define color index for graph color coding
-        colorsIdx = {'No': 'rgb(0,0,255)', 'Yes': 'rgb(0,255,0)'}
         #recreate graph with filter applied
-        fig = px.scatter(df, x="scantime", y="hosts", color = 'filtered', color_discrete_map=colorsIdx)
+        fig = px.scatter(df, x="scantime", y="hosts", color = 'state', color_discrete_map=colorsIdx)
         #style graph
         fig.update_yaxes(categoryorder='category ascending')
         fig.update_traces(marker=dict(line=dict(width=1.1, color='DarkSlateGrey')), selector=dict(mode='markers'))
         fig.update_xaxes(dtick = 1)
 
-        #flip filter flags back to 'No' for filter integrity (since df was already used the graph will still update correctly)
-        for i in indices:
-            df['filtered'][i] = 'No'
+        for i, oldValue in zip(indices, BAK):
+            df['state'][i] = oldValue
 
         return fig
     else:
         #create graph and style it
-        colorsIdx = {'No': 'rgb(0,0,255)', 'Yes': 'rgb(0,255,0)'}
-        fig = px.scatter(df, x="scantime", y="hosts", color = 'filtered', color_discrete_map=colorsIdx)
+        fig = px.scatter(df, x="scantime", y="hosts", color = 'state', color_discrete_map=colorsIdx)
         fig.update_yaxes(categoryorder='category ascending')
         fig.update_traces(marker=dict(line=dict(width=1.1, color='DarkSlateGrey')), selector=dict(mode='markers'))
         fig.update_xaxes(dtick = 1)
@@ -276,15 +284,14 @@ scanData4 = parseXML('test1000scan')
 
 #create a new full dictionary that conatins info from all the scans. 
 portInfo = mergeDicts(scanData1, scanData2, scanData3, scanData4)
-
+#portInfo = mergeDicts(scanData3)
 #compile the different scans into 1 dataframe (df) to be used by ploy.ly express (px)
-df = compileGraphData(scanData1[0], scanData2[0], scanData3[0], scanData4[0])
+df = compileGraphData((scanData1[0],scanData1[2]), (scanData2[0], scanData2[2]), (scanData3[0], scanData3[2]), (scanData4[0], scanData4[2]))
+#df = compileGraphData((scanData3[0],scanData3[2]))
 #-----------------------------------------------------------------------------------------------------------
-#define color index for graph color coding
-colorsIdx = {'No': 'rgb(0,0,255)', 'Yes': 'rgb(0,255,0)'}
 
 #create graph and style it
-fig = px.scatter(df, x="scantime", y="hosts", color = 'filtered', color_discrete_map=colorsIdx)
+fig = px.scatter(df, x="scantime", y="hosts", color = 'state', color_discrete_map=colorsIdx)
 fig.update_yaxes(categoryorder='category ascending') # order hosts
 fig.update_traces(marker=dict(line=dict(width=1.1, color='DarkSlateGrey')), selector=dict(mode='markers'))
 fig.update_xaxes(dtick = 1);

@@ -281,12 +281,13 @@ scanData1 = parseXML('testScan.xml')
 scanData2 = parseXML('test2Scan.xml')
 scanData3 = parseXML('test3Scan.xml')
 scanData4 = parseXML('test1000scan')
+scanData5 = parseXML('scan5000.xml')
 
 #create a new full dictionary that conatins info from all the scans. 
-portInfo = mergeDicts(scanData1, scanData2, scanData3, scanData4)
+portInfo = mergeDicts(scanData1, scanData2, scanData3, scanData4, scanData5)
 #portInfo = mergeDicts(scanData3)
 #compile the different scans into 1 dataframe (df) to be used by ploy.ly express (px)
-df = compileGraphData((scanData1[0],scanData1[2]), (scanData2[0], scanData2[2]), (scanData3[0], scanData3[2]), (scanData4[0], scanData4[2]))
+df = compileGraphData((scanData1[0],scanData1[2]), (scanData2[0], scanData2[2]), (scanData3[0], scanData3[2]), (scanData4[0], scanData4[2]), (scanData5[0], scanData5[2]))
 #df = compileGraphData((scanData3[0],scanData3[2]))
 #-----------------------------------------------------------------------------------------------------------
 

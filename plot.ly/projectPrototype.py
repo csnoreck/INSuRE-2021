@@ -42,13 +42,11 @@ def parseXML(filePath):
 
             for hostData in host: #reads tags under host tag
                 if hostData.tag == 'address':
-                    #print(hostData.attrib['addr'], "Address Type:", hostData.attrib['addrtype'])
                     hostIP = hostData.attrib['addr'] 
                     hostList += [hostIP]
                 #</address>
 
                 if hostData.tag == 'status':
-                    #print('Status:', hostData.attrib['state'])
                     state = hostData.attrib['state']
                     hostStateList += [state]
                 #</status>
@@ -56,7 +54,6 @@ def parseXML(filePath):
                 if hostData.tag == 'ports':
                     for portData in hostData:#reads tags under ports tag
                         if portData.tag == 'port':
-                            #print('    Port:', portData.attrib['portid'])  
                             portNum = portData.attrib['portid']
                             portProtocol = portData.attrib['protocol']
 
@@ -76,13 +73,10 @@ def parseXML(filePath):
                 tmpPortNum = []
                 tmpPortStatus = []
                 tmpPortProtocol = []
-            #else: 
-                #data[hostIP] = ''
         elif host.tag == 'runstats':
             for child in host:
                 if child.tag == 'finished':
                     hostList[0] = child.attrib['timestr']
-                #print(child)
 
     #</host>
     return hostList, data, hostStateList
@@ -273,7 +267,7 @@ def findAndFlag(df, searchterm):
         fig.update_xaxes(dtick = 1)
         return fig
 
-app = dash.Dash(__name__)
+app = dash.Dash(__name__, suppress_callback_exceptions=True)
 app.title = "Network Visualization"
 
 #-----------------------------------------------------------------------------------------------------------
@@ -367,8 +361,6 @@ graph_page = html.Div(children=[
 # define what to do when the callback is activated 
 def update_port_data(n_clicks, input_value):
     if input_value in df['hosts']:
-        #return 'Ports: '  + str(portInfo[input_value])
-        #print('Big info' + portInfo)
         return displayPortInfo(portInfo, input_value) 
     else:
         return 'Not a valid host'
@@ -386,7 +378,6 @@ def display_click_data(clickData):
         y_second_value = y_value["y"]
         test = [y_second_value]
         return y_second_value
-    #return json.dumps(clickData, indent=2)
 
 @app.callback(
     Output(component_id='main-graph', component_property='figure'), 
@@ -401,9 +392,6 @@ def update_graph(n_clicks, input_value):
     if input_value != '':
         #add wildcards to value to 
         input_value = input_value + '*'
-        #may want this block to check here, but i belive that it is effciently checked in findAndFlag
-        '''for host in df['hosts']:
-            if fnmatch.fnmatch(host, input_value):'''
         return findAndFlag(df, input_value)
     else:
         return fig

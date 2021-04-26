@@ -1,3 +1,7 @@
+The primary app is projectPrototype.py, wich runs a dash web app. To view the app, open a browser (tested with firefox) and go to 127.0.0.1:8050. 
+
+
+
 To add/edit/remove scans to the program, follow these instructions.
 
 1. Search for the string "CONFIGURE SCANS HERE" in projectPrototype.py.

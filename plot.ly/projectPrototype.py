@@ -10,12 +10,11 @@ import fnmatch
 import csv
 from dash.dependencies import Input, Output, State
 import pandas as pd
+import xml.etree.ElementTree as ET
 
 #in order to connect to the web app, first run this file, and go to 127.0.0.1:8050
 
-#these functions are a mess right now, there are a lot of things that are not necessary
-#for current functionality
-import xml.etree.ElementTree as ET
+
 
 #global config/style varaibles
 #define color index for graph color coding
@@ -271,15 +270,19 @@ app = dash.Dash(__name__, suppress_callback_exceptions=True)
 app.title = "Network Visualization"
 
 #-----------------------------------------------------------------------------------------------------------
+#CONFIGURE SCANS HERE
 scanData1 = parseXML('testScan.xml')
 scanData2 = parseXML('test2Scan.xml')
 scanData3 = parseXML('test3Scan.xml')
 scanData4 = parseXML('test1000scan')
 scanData5 = parseXML('scan5000.xml')
 
+#CONFIGURE SCANS HERE
 #create a new full dictionary that conatins info from all the scans. 
 portInfo = mergeDicts(scanData1, scanData2, scanData3, scanData4, scanData5)
 #portInfo = mergeDicts(scanData3)
+
+#CONFIGURE SCANS HERE
 #compile the different scans into 1 dataframe (df) to be used by ploy.ly express (px)
 df = compileGraphData((scanData1[0],scanData1[2]), (scanData2[0], scanData2[2]), (scanData3[0], scanData3[2]), (scanData4[0], scanData4[2]), (scanData5[0], scanData5[2]))
 #df = compileGraphData((scanData3[0],scanData3[2]))
@@ -311,7 +314,7 @@ graph_page = html.Div(children=[
     html.H1(children='Network Visualization Prototype'),
 
     html.Div(children='''
-        Version 0.1
+        Version 1.0
     '''),
 
     dcc.Input(
